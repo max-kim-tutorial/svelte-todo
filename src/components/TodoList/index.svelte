@@ -3,10 +3,34 @@
   import TodoInput from "./TodoInput.svelte";
   import TodoList from "./TodoList.svelte";
 
-  export let todos: Todo[];
-  export let createTodo: (text: string) => void;
-  export let removeTodo: (id: number) => void;
-  export let editTodo: (id: number, text: string) => void;
+  let todos: Todo[] = [
+    { id: 0, isChecked: false, text: "finish Svelte tutorial" },
+    { id: 1, isChecked: false, text: "build an app" },
+    { id: 2, isChecked: false, text: "world domination" },
+  ];
+
+  const createTodo = (text: string) => {
+    const newId = todos.length;
+    todos = todos.concat([{ id: newId, isChecked: false, text }]);
+  };
+
+  const removeTodo = (id: number) => {
+    todos = todos.filter((todo) => todo.id !== id);
+  };
+
+  const editTodo = (id: number, text: string) => {
+    const newTodo = [...todos];
+    newTodo.find((todo) => todo.id === id).text = text;
+    todos = newTodo;
+  };
+
+  const toggleTodo = (id: number) => {
+    const newTodo = [...todos];
+    const selectedTodo = newTodo.find((todo) => todo.id === id);
+    selectedTodo.isChecked = !selectedTodo.isChecked;
+    todos = newTodo;
+    console.log(todos);
+  };
 </script>
 
 <style lang="scss">
@@ -37,6 +61,6 @@
   <div class="todo-list">
     <div class="todo-list__title">Todo List</div>
     <TodoInput {createTodo} />
-    <TodoList {todos} {removeTodo} {editTodo} />
+    <TodoList {todos} {removeTodo} {editTodo} {toggleTodo} />
   </div>
 </section>
