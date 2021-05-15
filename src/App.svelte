@@ -8,8 +8,10 @@
     { id: 2, isChecked: false, text: "world domination" },
   ];
 
-  const createTodo = (newTodo: Todo) => {
-    todos = todos.concat([newTodo]);
+  const createTodo = (text: string) => {
+    const newId = todos.length;
+    todos = todos.concat([{ id: newId, isChecked: false, text }]);
+    console.log(todos);
   };
 
   const removeTodo = (id: number) => {

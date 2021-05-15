@@ -6,7 +6,7 @@
   export let editTodo: (id: number, text: string) => void;
 </script>
 
-<style>
+<style lang="scss">
 </style>
 
 <section class="todo-list__list">

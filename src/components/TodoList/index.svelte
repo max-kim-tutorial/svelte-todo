@@ -4,7 +4,7 @@
   import TodoList from "./TodoList.svelte";
 
   export let todos: Todo[];
-  export let createTodo: (newTodo: Todo) => void;
+  export let createTodo: (text: string) => void;
   export let removeTodo: (id: number) => void;
   export let editTodo: (id: number, text: string) => void;
 </script>
