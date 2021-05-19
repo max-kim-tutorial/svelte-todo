@@ -1,7 +1,16 @@
 <script lang="ts">
+  import { getMovies } from "~/core/api";
+
+  const movies = getMovies();
 </script>
 
 <style lang="scss">
 </style>
 
-<div>으앙</div>
+{#await movies}
+  <p>...waiting</p>
+{:then data}
+  <p>{data}</p>
+{:catch error}
+  <p style="color: red">{error.message}</p>
+{/await}
