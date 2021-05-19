@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Todo } from "~/todo.type";
-  import TodoInput from "./TodoInput.svelte";
-  import TodoList from "./TodoList.svelte";
+  import TodoInput from "../../components/TodoList/TodoInput.svelte";
+  import TodoList from "../../components/TodoList/TodoList.svelte";
 
   let todos: Todo[] = [
     { id: 0, isChecked: false, text: "finish Svelte tutorial" },

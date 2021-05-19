@@ -1,5 +1,6 @@
 <script lang="ts">
-  import TodoList from "~/components/TodoList/index.svelte";
+  import Router from "svelte-spa-router";
+  import routes from "./routes";
 </script>
 
 <style>
@@ -11,5 +12,5 @@
 </style>
 
 <main>
-  <TodoList />
+  <Router {routes} />
 </main>
