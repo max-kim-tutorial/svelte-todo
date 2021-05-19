@@ -7,7 +7,7 @@ Junction X 해커톤에서 써먹기 위한 Svelte 연습 + RXJS
 - [x] TODO 리스트 만들기
 - [x] 라우팅
 - [ ] 무비앱 만들기 + 비동기 요청 + RxJs 사용해보기
-- [ ] Svelte Store 사용해보기
+- [x] Svelte Store 사용해보기
 - [ ] 환경변수 적용
 - [ ] 스니펫 만들기
 
@@ -453,3 +453,161 @@ Svelte가 확실하게 강점을 보이는 곳에 굳이 RXjs까지 쓸 필요�
 ```
 
 ### Svelte store
+
+- readable, writable, derived로 정의된 스토어 객체는 기본적으로 subscribe 메소드를 포함하며, writeable로 정의된 객체는 추가로 set과 update메소드를 활용할 수 있음
+- 컴포넌트에서는 메소드 사용할 것 없이 $ 접두사로 스토어를 참조할 수 있음(자동 구독)
+- get 메소드를 사용하면 구독하지 않고 스토어의 값을 얻을 수 있음
+
+#### writable
+
+- 첫번째 인수는 스토어의 값
+- 두번째 인수는 스토어 구독이 발생하면 실행될 콜백. 콜백에서 반환하는 함수는 구독이 모두 취소되면 실행
+- get 메소드를 사용하면 구독을 하지 않고 store 객체의 값만 얻을 수 있음
+- 컴포넌트단에서는 변수를 임포트해서 subscribe 해주고
+- update 메소드로 값을 새로 써줄 수 있음
+- 역시 $를 통해 자동구독을 할 수 있어서 자동구독을 하면 그 다음부터는 컴포넌트 변수처럼 사용 가능
+
+```js
+import { writable } from "svelte/store";
+
+// 컴포넌트에서 바로 쓸 수 있기 때문에 초기값이 비어있어도 될듯
+export let store = writable("값", () => {
+  // 구독자가 1명 이상이 되면 실행!
+
+  return () => {
+    // 구독자가 0명이 되면 실행!
+  };
+});
+
+// writeable 자동 구독 및 변경
+
+<script>
+  import { name, count } from './store.js'
+</script>
+
+<button on:click={() => {
+  $count += 1 // Increase
+  $name = 'Neo' // Change name
+}}>
+  Click me!
+</button>
+
+<h2>{$count}</h2>
+<h2>{$name}</h2>
+```
+
+#### readable
+
+읽을수만 있는 스토어값
+
+```js
+import { readable } from "svelte/store";
+
+const userData = {
+  name: "Heropy",
+  age: 85,
+  email: "thesecon@gmail.com",
+  token: "Ag1oy1hsdSDe",
+};
+
+export let user = readable(userData, (set) => {
+  console.log("user 구독자가 1명 이상일 때!");
+  delete userData.token;
+
+  // 초기값을 최초 한번 수정할 수 있도록 콜백에서 함수를 사용할 수 있음
+  set(userData);
+  return () => {
+    console.log("user 구독자가 0명일 때...");
+  };
+});
+```
+
+#### derived
+
+계산된 스토어. Vuex의 getter
+
+```js
+import { writable, derived } from "svelte/store";
+
+export let count = writable(1);
+
+// count로 만들어낸 값
+export let double = derived(count, ($count) => $count * 2);
+
+// count와 double로 만들어낸 값. 여러개 변수를 차용할때는 배열을 사용
+// 통상적으로 매개변수 앞에 $를 붙여서 스토어의 값이라는 의미를 부여함
+export let total = derived([count, double], ([$count, $double], set) => {
+  console.log("total 구독자가 1명 이상일 때!");
+  set($count + $double);
+  return () => {
+    console.log("total 구독자가 0명일 때...");
+  };
+});
+
+// count로 만들어낸 값
+export let initialValue = derived(
+  count,
+  ($count, set) => {
+    setTimeout(() => set($count + 1), 1000);
+  },
+  "최초 계산 중..."
+);
+```
+
+#### 커스텀 스토어
+
+- 스토어 객체의 메소드가 포함된 객체를 커스텀 스토어라고 함
+- 다른 속성이나 메서드를 사용할 수 있다는 장점이 있음
+- 스토어의 수동/자동 구독을 위해 subscribe 메소드는 포함되어야 함
+- 스토어를 객체로 선언하는게 가능
+- 스토어를 분할해야하는 경우 이렇게 쓰는게 좋은 용례인듯 싶음
+
+```jsx
+import { writable, get } from "svelte/store";
+
+const _fruits = writable([
+  { id: 1, name: "Apple" },
+  { id: 2, name: "Banana" },
+  { id: 3, name: "Cherry" },
+]);
+
+export let fruits = {
+  // subscribe를 포함시키기 위해서 전개연산자 사용
+  // 근데 이렇게하면 한 값과 그 값과 관련된 메소드 하나만 가능하겟네 아닌가 뭐 연산은 복합적으로 쓸 수 있다 하더라도
+  ..._fruits,
+  getList: () => get(_fruits).map((f) => f.name),
+  setItem: (name) =>
+    _fruits.update((f) => {
+      f.push({
+        id: f.length + 1,
+        name,
+      });
+      console.log(f);
+      return f;
+    }),
+};
+
+// 아 이렇게하면 되겟네
+
+import { writable } from "svelte/store";
+
+export const state = writable({
+  counter: 0,
+  todos: [],
+  randomFact: "Svelte can be easy",
+});
+
+export let userInfo = {
+  ...state,
+  getList: () => get(_fruits).map((f) => f.name),
+  setItem: (name) =>
+    _fruits.update((f) => {
+      f.push({
+        id: f.length + 1,
+        name,
+      });
+      console.log(f);
+      return f;
+    }),
+};
+```
