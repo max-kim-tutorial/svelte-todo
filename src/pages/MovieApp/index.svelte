@@ -1,16 +1,14 @@
 <script lang="ts">
-  import { getMovies } from "~/core/api";
-
-  const movies = getMovies();
+  import { movieStore } from "~/store";
 </script>
 
 <style lang="scss">
 </style>
 
-{#await movies}
+{#await movieStore.getMovie()}
   <p>...waiting</p>
-{:then data}
-  <p>{data}</p>
+{:then}
+  <p>{$movieStore.data}</p>
 {:catch error}
   <p style="color: red">{error.message}</p>
 {/await}
